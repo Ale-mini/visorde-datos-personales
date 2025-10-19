@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Búsqueda de datos</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f7f7f7;
+  text-align: center;
+  padding: 40px;
+}
+input, button {
+  padding: 10px;
+  margin: 10px;
+  font-size: 1.1em;
+}
+#resultado {
+  margin-top: 30px;
+  padding: 15px;
+  background: white;
+  border-radius: 10px;
+  display: inline-block;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+</style>
+</head>
+<body>
+<h2>Consulta de datos</h2>
+<p>Ingrese su código:</p>
+<input type="text" id="codigo" placeholder="Ej: 1001" />
+<button onclick="buscar()">Buscar</button>
+
+<div id="resultado"></div>
+
+<script>
+const SHEET_ID = "1i8xPdjeZ9ODFS0r5KzUc1ANYJkNqOPOz-AsHcDewcIQ"; // 
+const SHEET_NAME = "estadisticas"; // o el nombre que tenga tu hoja
+const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+
+async function buscar() {
+  const codigo = document.getElementById("codigo").value.trim();
+  const res = await fetch(URL);
+  const text = await res.text();
+  const json = JSON.parse(text.substr(47).slice(0, -2));
+  const data = json.table.rows.map(r => ({
+    codigo: r.c[0]?.v,
+    nombre: r.c[1]?.v,
+    edad: r.c[2]?.v,
+    ciudad: r.c[3]?.v
+  }));
+  
+  const resultado = data.find(d => d.codigo == codigo);
+  const div = document.getElementById("resultado");
+
+  if (resultado) {
+    div.innerHTML = `
+      <h3>Resultado:</h3>
+      <p><b>Nombre:</b> ${resultado.nombre}</p>
+      <p><b>Edad:</b> ${resultado.edad}</p>
+      <p><b>Ciudad:</b> ${resultado.ciudad}</p>
+    `;
+  } else {
+    div.innerHTML = "<p style='color:red;'>Código no encontrado.</p>";
+  }
+}
+</script>
+</body>
+</html>
